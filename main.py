@@ -10,8 +10,9 @@ import sys
 import os
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QFont
+from helpers import scan_dir
 
-
+ 
 class MainWindow(QtWidgets.QDialog):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -30,6 +31,7 @@ class MainWindow(QtWidgets.QDialog):
         # Central Widget (required)
         self.central_widget = QtWidgets.QWidget(self)
         self.central_widget.setObjectName("central_widget")
+        self.central_widget.setFont(font)
 
         # Directory Selection Widget
         self.top_widget = QtWidgets.QWidget(self.central_widget)
@@ -58,14 +60,20 @@ class MainWindow(QtWidgets.QDialog):
         self.browse_button.setObjectName("browse_button")
         self.horizontalLayout.addWidget(self.browse_button)
 
-        # Scan and Sort Widget
+        self.browse_button.clicked.connect(self.select_directory)
+
+        self.status_label = QtWidgets.QLabel(self.top_widget)
+        self.status_label.setGeometry(50, 75, 200, 16)
+        self.status_label.setText('test')
+
+        # Scan and Select Widget
         # right side
         self.widget_2 = QtWidgets.QWidget(self.central_widget)
-        self.widget_2.setGeometry(10, 150, 481, 291)
+        self.widget_2.setGeometry(10, 150, 481, 251)
         self.widget_2.setObjectName("widget_2")
         # left side
         self.widget_4 = QtWidgets.QWidget(self.widget_2)
-        self.widget_4.setGeometry(10, 30, 461, 251)
+        self.widget_4.setGeometry(10, 30, 461, 211)
         self.widget_4.setObjectName("widget_4")
         # right and left side layout
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_4)
@@ -75,65 +83,72 @@ class MainWindow(QtWidgets.QDialog):
         # Label
         self.label_2 = QtWidgets.QLabel(self.widget_2)
         self.label_2.setText("Select desired file types to sort")
-        self.label_2.setGeometry(20, 0, 150, 31)
+        self.label_2.move(20, 0)
         self.label_2.setObjectName("label_2")
-        # checkbox frame
-        self.file_list = QtWidgets.QListWidget(self.widget_4)
-        self.file_list.setObjectName("file_list")
-        self.horizontalLayout_2.addWidget(self.file_list)
-        # list items
-        item = QtWidgets.QListWidgetItem('item1')
-        item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
-        item.setCheckState(QtCore.Qt.Unchecked)
-        self.file_list.addItem(item)
+        # scanned file tree
 
-        self.widget_5 = QtWidgets.QWidget(self.widget_4)
+        self.file_tree = QtWidgets.QTreeWidget(self.widget_4)
+        self.horizontalLayout_2.addWidget(self.file_tree)
+        self.file_tree.setColumnCount(1)
+        self.file_tree.setHeaderLabel("Scanned Files")
+
+        item0 = QtWidgets.QTreeWidgetItem(0)
+        item0.setText(0, "Images")
+        item0.setFlags(item0.flags() | QtCore.Qt.ItemIsUserCheckable)
+        item0.setCheckState(0, QtCore.Qt.Unchecked)
+        child_item = QtWidgets.QTreeWidgetItem(1)
+        child_item.setText(0, "file1.png")
+        item0.addChild(child_item)
+
+        self.file_tree.insertTopLevelItem(0, item0)
+
+        # Scan Widget
+        self.widget_5 = QtWidgets.QWidget(self.central_widget)
+
+        self.widget_5 = QtWidgets.QWidget(self.central_widget)
+        self.widget_5.setGeometry(10, 420, 481, 41)
         self.widget_5.setObjectName("widget_5")
-        self.horizontalLayout_2.addWidget(self.widget_5)
 
-        self.listWidget = QtWidgets.QListWidget(self.widget_5)
-        self.listWidget.setGeometry(20, 20, 181, 191)
-        self.listWidget.setObjectName("listWidget")
+        self.scan_button = QtWidgets.QPushButton(self.widget_5)
+        self.scan_button.setText('Sort')
+        self.scan_button.move(10, 10)
+        self.scan_button.setObjectName("scan_button")
 
+    # Functions
     def select_directory(self):
         directory_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory')
-        # self.line_edit1.setText(directory_path)
+        line_edit_text = self.lineEdit.text()
 
         if os.path.isdir(directory_path):
-            print(directory_path)
-        else:
-            print('Please input a valid directory')
+            self.status_label.setText('')
+            self.lineEdit.setText(directory_path)
+            scan_dir(directory_path)
+        elif len(line_edit_text) != 0:
+            if os.path.isdir(line_edit_text):
+                scan_dir(line_edit_text)
+            else:
+                self.status_label.setText('Please Input a valid directory')
+        elif len(line_edit_text) == 0:
+            self.status_label.setText('Please Input a valid directory')
 
 
 app = QtWidgets.QApplication(sys.argv)
-# app.setStyleSheet("""
-#     QWidget {
-#         background: none;
-#         border-radius: 5px;
-#     }
-#     QLineEdit {
-#         background: #b5b5b5;
-#         border-width: 10px;
-#         padding-left: 10px;
-#         padding-right: 10px;
-#         border-radius: 5px;
-#     }
-#     QLabel {
-# 
-#     }
-#     QPushButton {
-#         background: none;
-#         font-size: 12px;
-#     }
-#     QFrame {
-#         background: #c7c7c7;
-#         border-radius: 5px;
-#     }
-#     QListWidget{
-#         background: #adadad;
-#         border-radius: 5px;
-#     }
-# """)
+app.setStyleSheet("""
+    QLineEdit {
+        background: #b5b5b5;
+        border-width: 10px;
+        padding-left: 10px;
+        padding-right: 10px;
+        border-radius: 5px;
+    }
+    QLabel {
+        background: none;
+    }
+    QListWidget{
+        background: #adadad;
+        border-radius: 5px;
+    }
+""")
 
 Organizer = MainWindow()
 Organizer.show()
