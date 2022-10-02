@@ -11,8 +11,9 @@ import os
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QFont
 from helpers import scan_dir
+from file_dictionary import file_dictionary
 
- 
+
 class MainWindow(QtWidgets.QDialog):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -66,41 +67,30 @@ class MainWindow(QtWidgets.QDialog):
         self.status_label.setGeometry(50, 75, 200, 16)
         self.status_label.setText('test')
 
-        # Scan and Select Widget
-        # right side
+        # Scan and Select Widget (bottom widget)
+        # right side widget
         self.widget_2 = QtWidgets.QWidget(self.central_widget)
         self.widget_2.setGeometry(10, 150, 481, 251)
         self.widget_2.setObjectName("widget_2")
-        # left side
+        # left side widget
         self.widget_4 = QtWidgets.QWidget(self.widget_2)
         self.widget_4.setGeometry(10, 30, 461, 211)
         self.widget_4.setObjectName("widget_4")
-        # right and left side layout
+        # layout
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_4)
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_2.setSpacing(10)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        # Label
+        # label
         self.label_2 = QtWidgets.QLabel(self.widget_2)
         self.label_2.setText("Select desired file types to sort")
         self.label_2.move(20, 0)
         self.label_2.setObjectName("label_2")
-        # scanned file tree
-
+        # scanned file tree (empty)
         self.file_tree = QtWidgets.QTreeWidget(self.widget_4)
         self.horizontalLayout_2.addWidget(self.file_tree)
         self.file_tree.setColumnCount(1)
         self.file_tree.setHeaderLabel("Scanned Files")
-
-        item0 = QtWidgets.QTreeWidgetItem(0)
-        item0.setText(0, "Images")
-        item0.setFlags(item0.flags() | QtCore.Qt.ItemIsUserCheckable)
-        item0.setCheckState(0, QtCore.Qt.Unchecked)
-        child_item = QtWidgets.QTreeWidgetItem(1)
-        child_item.setText(0, "file1.png")
-        item0.addChild(child_item)
-
-        self.file_tree.insertTopLevelItem(0, item0)
 
         # Scan Widget
         self.widget_5 = QtWidgets.QWidget(self.central_widget)
@@ -122,14 +112,64 @@ class MainWindow(QtWidgets.QDialog):
         if os.path.isdir(directory_path):
             self.status_label.setText('')
             self.lineEdit.setText(directory_path)
-            scan_dir(directory_path)
+            files = scan_dir(directory_path)
+            self.generate_file_tree(files)
         elif len(line_edit_text) != 0:
             if os.path.isdir(line_edit_text):
-                scan_dir(line_edit_text)
+                files = scan_dir(line_edit_text)
+                self.generate_file_tree(files)
             else:
                 self.status_label.setText('Please Input a valid directory')
         elif len(line_edit_text) == 0:
             self.status_label.setText('Please Input a valid directory')
+
+    def generate_file_tree(self, files):
+        parents = []
+        scanned_categories = []
+        category_dict = {}
+
+        for file in files:
+            extension = file.split(".")[-1].lower()
+            if extension in file_dictionary.keys():
+                category = file_dictionary[extension]
+                if category in scanned_categories:
+                    # add child to category
+                    child_item = QtWidgets.QTreeWidgetItem(1)
+                    child_item.setText(0, file)
+                    parents[category_dict[category]].addChild(child_item)
+                else:
+                    category_dict[category] = (len(scanned_categories))
+                    scanned_categories.append(category)
+                    # create child
+                    child_item = QtWidgets.QTreeWidgetItem(1)
+                    child_item.setText(0, file)
+                    # check if parent exists
+                    parent_item = QtWidgets.QTreeWidgetItem(0)
+                    parent_item.setText(0, category)
+                    parent_item.setFlags(parent_item.flags() | QtCore.Qt.ItemIsUserCheckable)
+                    parent_item.setCheckState(0, QtCore.Qt.Unchecked)
+                    parent_item.addChild(child_item)  # add child to parent
+                    parents.append(parent_item)  # push parent to parent array
+                    # create directory
+                    if os.path.exists():
+                        os.mkdir()
+                    else:
+                        os.mkdir()
+
+                self.file_tree.insertTopLevelItems(0, parents)
+
+            else:
+                print('unknown extension: ' + extension)
+
+        # item0 = QtWidgets.QTreeWidgetItem(0)
+        # item0.setText(0, "Images")
+        # item0.setFlags(item0.flags() | QtCore.Qt.ItemIsUserCheckable)
+        # item0.setCheckState(0, QtCore.Qt.Unchecked)
+        # child_item = QtWidgets.QTreeWidgetItem(1)
+        # child_item.setText(0, "file1.png")
+        # item0.addChild(child_item)
+        # 
+        # self.file_tree.insertTopLevelItem(0, item0)
 
 
 app = QtWidgets.QApplication(sys.argv)
