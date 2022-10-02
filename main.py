@@ -4,8 +4,7 @@
 # 4. user selects which categories to sort
 # 5. folders get created and desired files get sorted into them
 # potential features: sort by title,
-
-
+import shutil
 import sys
 import os
 from PyQt5 import QtWidgets, QtCore
@@ -19,6 +18,7 @@ class MainWindow(QtWidgets.QDialog):
         super(MainWindow, self).__init__()
 
         # variables
+        self.directory_path = None
         font = QFont('Open Sans', 10)
         center = QtWidgets.QDesktopWidget().availableGeometry().center()
         win_width: int = 500
@@ -106,13 +106,13 @@ class MainWindow(QtWidgets.QDialog):
 
     # Functions
     def select_directory(self):
-        directory_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory')
+        self.directory_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory')
         line_edit_text = self.lineEdit.text()
 
-        if os.path.isdir(directory_path):
+        if os.path.isdir(self.directory_path):
             self.status_label.setText('')
-            self.lineEdit.setText(directory_path)
-            files = scan_dir(directory_path)
+            self.lineEdit.setText(self.directory_path)
+            files = scan_dir(self.directory_path)
             self.generate_file_tree(files)
         elif len(line_edit_text) != 0:
             if os.path.isdir(line_edit_text):
@@ -147,29 +147,22 @@ class MainWindow(QtWidgets.QDialog):
                     parent_item = QtWidgets.QTreeWidgetItem(0)
                     parent_item.setText(0, category)
                     parent_item.setFlags(parent_item.flags() | QtCore.Qt.ItemIsUserCheckable)
-                    parent_item.setCheckState(0, QtCore.Qt.Unchecked)
+                    parent_item.setCheckState(0, QtCore.Qt.Checked)
                     parent_item.addChild(child_item)  # add child to parent
                     parents.append(parent_item)  # push parent to parent array
                     # create directory
-                    if os.path.exists():
-                        os.mkdir()
+                    if os.path.exists(os.path.join(self.directory_path, category).replace("\\", "/")):
+                        os.mkdir(self.directory_path, category + "_sorted")
                     else:
-                        os.mkdir()
-
+                        path = os.path.join(self.directory_path, category).replace("\\", "/")
+                        os.mkdir(path)
+                sorted_dir = os.path.join(self.directory_path, category).replace("\\", "/")
+                sorted_filepath = os.path.join(sorted_dir, file).replace("\\", "/")
+                shutil.move(os.path.join(self.directory_path, file).replace("\\", "/"), sorted_filepath)
                 self.file_tree.insertTopLevelItems(0, parents)
 
             else:
                 print('unknown extension: ' + extension)
-
-        # item0 = QtWidgets.QTreeWidgetItem(0)
-        # item0.setText(0, "Images")
-        # item0.setFlags(item0.flags() | QtCore.Qt.ItemIsUserCheckable)
-        # item0.setCheckState(0, QtCore.Qt.Unchecked)
-        # child_item = QtWidgets.QTreeWidgetItem(1)
-        # child_item.setText(0, "file1.png")
-        # item0.addChild(child_item)
-        # 
-        # self.file_tree.insertTopLevelItem(0, item0)
 
 
 app = QtWidgets.QApplication(sys.argv)
