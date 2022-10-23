@@ -13,12 +13,43 @@ from helpers import scan_dir
 from file_dictionary import file_dictionary
 
 
+# TODO add rescan button that scans text edit box
+
+def iter_tree_widget(tree):
+    iterator = QtWidgets.QTreeWidgetItemIterator(tree)
+    while True:
+        item = iterator.value()
+        if item is not None:
+            yield item
+            iterator += 1
+        else:
+            break
+
+
+def tree_item_count(tree):
+    count = 0
+    iterator = QtWidgets.QTreeWidgetItemIterator(tree)  # pass your treewidget as arg
+    while iterator.value():
+        item = iterator.value()
+
+        if item.parent():
+            if item.parent().isExpanded():
+                count += 1
+        else:
+            # root item
+            count += 1
+        iterator += 1
+    return count
+
+
 class MainWindow(QtWidgets.QDialog):
     def __init__(self):
         super(MainWindow, self).__init__()
 
         # variables
+        self.scanned_categories = []
         self.directory_path = None
+        self.scanned = False
         font = QFont('Open Sans', 10)
         center = QtWidgets.QDesktopWidget().availableGeometry().center()
         win_width: int = 500
@@ -28,6 +59,7 @@ class MainWindow(QtWidgets.QDialog):
         self.setWindowTitle('File Organizer')
         self.setObjectName('MainWindow')
         self.setGeometry(center.x() - win_width // 2, center.y() - win_height // 2, win_width, win_height)
+        self.setFixedSize(win_width, win_height)
 
         # Central Widget (required)
         self.central_widget = QtWidgets.QWidget(self)
@@ -65,7 +97,7 @@ class MainWindow(QtWidgets.QDialog):
 
         self.status_label = QtWidgets.QLabel(self.top_widget)
         self.status_label.setGeometry(50, 75, 200, 16)
-        self.status_label.setText('test')
+        self.status_label.setText('')
 
         # Scan and Select Widget (bottom widget)
         # right side widget
@@ -92,19 +124,41 @@ class MainWindow(QtWidgets.QDialog):
         self.file_tree.setColumnCount(1)
         self.file_tree.setHeaderLabel("Scanned Files")
 
-        # Scan Widget
+        # Sort Widget
         self.widget_5 = QtWidgets.QWidget(self.central_widget)
 
         self.widget_5 = QtWidgets.QWidget(self.central_widget)
         self.widget_5.setGeometry(10, 420, 481, 41)
         self.widget_5.setObjectName("widget_5")
 
-        self.scan_button = QtWidgets.QPushButton(self.widget_5)
-        self.scan_button.setText('Sort')
-        self.scan_button.move(10, 10)
-        self.scan_button.setObjectName("scan_button")
+        self.sort_button = QtWidgets.QPushButton(self.widget_5)
+        self.sort_button.setText('Sort')
+        self.sort_button.move(10, 10)
+        self.sort_button.setObjectName("scan_button")
+        self.sort_button.setEnabled(False)
+        self.sort_button.clicked.connect(self.sort_files)
+
+        self.sort_progress = QtWidgets.QProgressBar(self.widget_5)
+        self.sort_progress.setGeometry(100, 14, 125, 20)
+        self.sort_progress.setVisible(False)
+        self.sort_progress.setAlignment(QtCore.Qt.AlignCenter)
 
     # Functions
+    def show_popup(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setWindowTitle("Success")
+        msg.setText("Files sorted successfully")
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Open)
+        msg.setDefaultButton(QtWidgets.QMessageBox.Ok)
+        msg.buttonClicked.connect(self.popup_button)
+
+        msg.exec_()
+
+    def popup_button(self, i):
+        if i.text() == "Open":
+            os.startfile(self.directory_path)
+
     def select_directory(self):
         self.directory_path = QtWidgets.QFileDialog.getExistingDirectory(self, 'Select Directory')
         line_edit_text = self.lineEdit.text()
@@ -124,45 +178,97 @@ class MainWindow(QtWidgets.QDialog):
             self.status_label.setText('Please Input a valid directory')
 
     def generate_file_tree(self, files):
+        self.file_tree.clear()
+        self.scanned_categories.clear()
         parents = []
-        scanned_categories = []
         category_dict = {}
+        column = 0
 
         for file in files:
             extension = file.split(".")[-1].lower()
             if extension in file_dictionary.keys():
                 category = file_dictionary[extension]
-                if category in scanned_categories:
+                if category in self.scanned_categories:
                     # add child to category
                     child_item = QtWidgets.QTreeWidgetItem(1)
-                    child_item.setText(0, file)
+                    child_item.setText(column, file)
+                    child_item.setFlags(child_item.flags() | QtCore.Qt.ItemIsUserCheckable)
+                    child_item.setCheckState(column, QtCore.Qt.Checked)
                     parents[category_dict[category]].addChild(child_item)
                 else:
-                    category_dict[category] = (len(scanned_categories))
-                    scanned_categories.append(category)
+                    # add category to dict
+                    category_dict[category] = (len(self.scanned_categories))
+                    self.scanned_categories.append(category)
                     # create child
                     child_item = QtWidgets.QTreeWidgetItem(1)
-                    child_item.setText(0, file)
-                    # check if parent exists
-                    parent_item = QtWidgets.QTreeWidgetItem(0)
-                    parent_item.setText(0, category)
-                    parent_item.setFlags(parent_item.flags() | QtCore.Qt.ItemIsUserCheckable)
-                    parent_item.setCheckState(0, QtCore.Qt.Checked)
+                    child_item.setText(column, file)
+                    child_item.setFlags(child_item.flags() | QtCore.Qt.ItemIsUserCheckable)
+                    child_item.setCheckState(column, QtCore.Qt.Checked)
+                    # create parent
+                    parent_item = QtWidgets.QTreeWidgetItem(column)
+                    parent_item.setText(column, category)
+                    parent_item.setFlags(parent_item.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
+                    parent_item.setCheckState(column, QtCore.Qt.Checked)
                     parent_item.addChild(child_item)  # add child to parent
                     parents.append(parent_item)  # push parent to parent array
+            else:
+                category = "miscellaneous"
+                if category not in self.scanned_categories:
+                    # add category to dict
+                    category_dict[category] = (len(self.scanned_categories))
+                    # create parent
+                    parent_item = QtWidgets.QTreeWidgetItem(column)
+                    parent_item.setText(column, category)
+                    parent_item.setFlags(parent_item.flags() | QtCore.Qt.ItemIsTristate | QtCore.Qt.ItemIsUserCheckable)
+                    parent_item.setCheckState(column, QtCore.Qt.Checked)
+                    parents.append(parent_item)  # push parent to parent array
+                    self.scanned_categories.append(category)
+                # add child to category
+                child_item = QtWidgets.QTreeWidgetItem(1)
+                child_item.setText(column, file)
+                child_item.setFlags(child_item.flags() | QtCore.Qt.ItemIsUserCheckable)
+                child_item.setCheckState(column, QtCore.Qt.Checked)
+                parent_item.addChild(child_item)  # add child to parent
+                parents[category_dict[category]].addChild(child_item)
+
+            self.file_tree.insertTopLevelItems(column, parents)
+
+        if len(parents) == 0:
+            self.scanned = False
+        else:
+            self.scanned = True
+        self.sort_button.setEnabled(self.scanned)
+
+    def sort_files(self):
+        # check for checked boxes
+        column = 0
+        category = str
+        item_count = tree_item_count(self.file_tree)
+        self.sort_progress.setVisible(True)
+
+        for i, item in enumerate(iter_tree_widget(self.file_tree)):
+            # print('State: %s, Text: "%s"' % (item.checkState(column), item.text(column)))
+            progress_value = i // item_count * 100 # normalize value to make percentage
+            self.sort_progress.setValue(progress_value)
+            if item.checkState(column) != 0:
+                if item.text(column) in self.scanned_categories:  # if name is category name
+                    category = item.text(column)
                     # create directory
                     if os.path.exists(os.path.join(self.directory_path, category).replace("\\", "/")):
-                        os.mkdir(self.directory_path, category + "_sorted")
+                        continue
                     else:
                         path = os.path.join(self.directory_path, category).replace("\\", "/")
                         os.mkdir(path)
-                sorted_dir = os.path.join(self.directory_path, category).replace("\\", "/")
-                sorted_filepath = os.path.join(sorted_dir, file).replace("\\", "/")
-                shutil.move(os.path.join(self.directory_path, file).replace("\\", "/"), sorted_filepath)
-                self.file_tree.insertTopLevelItems(0, parents)
-
-            else:
-                print('unknown extension: ' + extension)
+                else:  # if name is file name
+                    # sort file into directory
+                    sorted_dir = os.path.join(self.directory_path, category).replace("\\", "/")
+                    sorted_filepath = os.path.join(sorted_dir, item.text(column)).replace("\\", "/")
+                    shutil.move(os.path.join(self.directory_path, item.text(column)).replace("\\", "/"),
+                                sorted_filepath)
+        self.sort_progress.setVisible(True)
+        files = scan_dir(self.directory_path)
+        self.generate_file_tree(files)
+        self.show_popup()
 
 
 app = QtWidgets.QApplication(sys.argv)
@@ -177,9 +283,18 @@ app.setStyleSheet("""
     QLabel {
         background: none;
     }
-    QListWidget{
+    QListWidget {
         background: #adadad;
         border-radius: 5px;
+    }
+    QProgressBar {
+        border: solid grey;
+        border-radius: 5px;
+        color: black;
+    }
+    QProgressBar::chunk {
+        background-color: #6bffa4;
+        border-radius :5px;
     }
 """)
 
