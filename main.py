@@ -59,45 +59,101 @@ class MainWindow(QtWidgets.QDialog):
         self.setWindowTitle('File Organizer')
         self.setObjectName('MainWindow')
         self.setGeometry(center.x() - win_width // 2, center.y() - win_height // 2, win_width, win_height)
-        self.setFixedSize(win_width, win_height)
 
         # Central Widget (required)
         self.central_widget = QtWidgets.QWidget(self)
         self.central_widget.setObjectName("central_widget")
-        self.central_widget.setFont(font)
+
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.central_widget)
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+
+        self.widget_6 = QtWidgets.QWidget(self.central_widget)
+        self.widget_6.setObjectName("widget_6")
+
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.widget_6)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+
+        self.widget = QtWidgets.QWidget(self.widget_6)
+        self.widget.setObjectName("widget")
+
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout(self.widget)
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+
+        self.widget_7 = QtWidgets.QWidget(self.widget)
+        self.widget_7.setObjectName("widget_7")
 
         # Directory Selection Widget
-        self.top_widget = QtWidgets.QWidget(self.central_widget)
-        self.top_widget.setGeometry(10, 10, 481, 131)
-        self.top_widget.setObjectName("widget")
+        self.file_browse_layout = QtWidgets.QVBoxLayout(self.widget_7)
+        self.file_browse_layout.setObjectName("file_browse_layout")
 
-        self.widget_3 = QtWidgets.QWidget(self.top_widget)
-        self.widget_3.setGeometry(30, 40, 431, 41)
+        self.label_title1 = QtWidgets.QLabel(self.widget_7)
+        self.label_title1.setObjectName("label")
+
+        self.file_browse_layout.addWidget(self.label_title1)
+
+        self.lineEdit = QtWidgets.QLineEdit(self.widget_7)
+        self.lineEdit.setObjectName("lineEdit")
+
+        self.file_browse_layout.addWidget(self.lineEdit)
+
+        self.label_status = QtWidgets.QLabel(self.widget_7)
+        self.label_status.setObjectName("label_3")
+
+        self.file_browse_layout.addWidget(self.label_status)
+
+        self.horizontalLayout_5.addWidget(self.widget_7)
+
+        self.widget_3 = QtWidgets.QWidget(self.widget)
         self.widget_3.setObjectName("widget_3")
 
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget_3)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
 
-        self.label = QtWidgets.QLabel(self.top_widget)
-        self.label.setText('File Directory')
-        self.label.setGeometry(10, 10, 81, 16)
-        self.label.setObjectName("label")
+        self.pushButton = QtWidgets.QPushButton(self.widget_3)
+        self.pushButton.setObjectName("pushButton")
 
-        self.lineEdit = QtWidgets.QLineEdit(self.widget_3)
-        self.lineEdit.setObjectName("lineEdit")
-        self.horizontalLayout.addWidget(self.lineEdit)
+        self.horizontalLayout.addWidget(self.pushButton)
+
+        self.horizontalLayout_5.addWidget(self.widget_3)
+
+        self.verticalLayout_2.addWidget(self.widget)
+
+        self.widget_2 = QtWidgets.QWidget(self.widget_6)
+        self.widget_2.setObjectName("widget_2")
+
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.widget_2)
+        self.verticalLayout.setObjectName("verticalLayout")
+
+        self.label_2 = QtWidgets.QLabel(self.widget_2)
+        self.label_2.setObjectName("label_2")
+
+        self.verticalLayout.addWidget(self.label_2)
+
+        self.widget_4 = QtWidgets.QWidget(self.widget_2)
+        self.widget_4.setObjectName("widget_4")
+
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_4)
+        self.horizontalLayout_2.setSpacing(10)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+
+
+
+
+
 
         self.browse_button = QtWidgets.QPushButton(self.widget_3)
         self.browse_button.setText("Browse")
         self.browse_button.setObjectName("browse_button")
-        self.horizontalLayout.addWidget(self.browse_button)
+        self.horizontal_layout_1.addWidget(self.browse_button)
 
         self.browse_button.clicked.connect(self.select_directory)
 
         self.status_label = QtWidgets.QLabel(self.top_widget)
         self.status_label.setGeometry(50, 75, 200, 16)
         self.status_label.setText('')
+
+        self.file_browse_layout.addWidget(self.label)
+        self.file_browse_layout.addWidget(self.status_label)
 
         # Scan and Select Widget (bottom widget)
         # right side widget
