@@ -1,9 +1,3 @@
-# 1. user navigates to desired directory via GUI
-# 2. directory gets scanned
-# 3. file dictionary sorts by extension and puts into categories e.g. .jpeg and .png files go under 'images"
-# 4. user selects which categories to sort
-# 5. folders get created and desired files get sorted into them
-# potential features: sort by title,
 import shutil
 import sys
 import os
@@ -12,40 +6,9 @@ from PyQt5.QtGui import QFont
 from helpers import scan_dir
 from file_dictionary import file_dictionary
 
-
-# TODO add rescan button that scans text edit box
-
-def iter_tree_widget(tree):
-    iterator = QtWidgets.QTreeWidgetItemIterator(tree)
-    while True:
-        item = iterator.value()
-        if item is not None:
-            yield item
-            iterator += 1
-        else:
-            break
-
-
-def tree_item_count(tree):
-    count = 0
-    iterator = QtWidgets.QTreeWidgetItemIterator(tree)  # pass your treewidget as arg
-    while iterator.value():
-        item = iterator.value()
-
-        if item.parent():
-            if item.parent().isExpanded():
-                count += 1
-        else:
-            # root item
-            count += 1
-        iterator += 1
-    return count
-
-
-class MainWindow(QtWidgets.QDialog):
+class Ui_MainWindow(QtWidgets.QDialog):
     def __init__(self):
-        super(MainWindow, self).__init__()
-
+        super(Ui_MainWindow, self).__init__()
         # variables
         self.scanned_categories = []
         self.directory_path = None
@@ -55,19 +18,17 @@ class MainWindow(QtWidgets.QDialog):
         win_width: int = 500
         win_height: int = 500
 
-        # main window creation
-        self.setWindowTitle('File Organizer')
-        self.setObjectName('MainWindow')
-        self.setGeometry(center.x() - win_width // 2, center.y() - win_height // 2, win_width, win_height)
+    def setupUi(self, MainWindow):
+        MainWindow.setObjectName("MainWindow")
+        MainWindow.resize(470, 500)
 
-        # Central Widget (required)
-        self.central_widget = QtWidgets.QWidget(self)
-        self.central_widget.setObjectName("central_widget")
+        self.centralwidget = QtWidgets.QWidget(MainWindow)
+        self.centralwidget.setObjectName("centralwidget")
 
-        self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.central_widget)
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.centralwidget)
         self.horizontalLayout_6.setObjectName("horizontalLayout_6")
 
-        self.widget_6 = QtWidgets.QWidget(self.central_widget)
+        self.widget_6 = QtWidgets.QWidget(self.centralwidget)
         self.widget_6.setObjectName("widget_6")
 
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.widget_6)
@@ -82,24 +43,23 @@ class MainWindow(QtWidgets.QDialog):
         self.widget_7 = QtWidgets.QWidget(self.widget)
         self.widget_7.setObjectName("widget_7")
 
-        # Directory Selection Widget
-        self.file_browse_layout = QtWidgets.QVBoxLayout(self.widget_7)
-        self.file_browse_layout.setObjectName("file_browse_layout")
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout(self.widget_7)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
 
-        self.label_title1 = QtWidgets.QLabel(self.widget_7)
-        self.label_title1.setObjectName("label")
+        self.label = QtWidgets.QLabel(self.widget_7)
+        self.label.setObjectName("label")
 
-        self.file_browse_layout.addWidget(self.label_title1)
+        self.verticalLayout_3.addWidget(self.label)
 
         self.lineEdit = QtWidgets.QLineEdit(self.widget_7)
         self.lineEdit.setObjectName("lineEdit")
 
-        self.file_browse_layout.addWidget(self.lineEdit)
+        self.verticalLayout_3.addWidget(self.lineEdit)
 
-        self.label_status = QtWidgets.QLabel(self.widget_7)
-        self.label_status.setObjectName("label_3")
+        self.status_label = QtWidgets.QLabel(self.widget_7)
+        self.status_label.setObjectName("label_3")
 
-        self.file_browse_layout.addWidget(self.label_status)
+        self.verticalLayout_3.addWidget(self.status_label)
 
         self.horizontalLayout_5.addWidget(self.widget_7)
 
@@ -111,6 +71,7 @@ class MainWindow(QtWidgets.QDialog):
 
         self.pushButton = QtWidgets.QPushButton(self.widget_3)
         self.pushButton.setObjectName("pushButton")
+        self.pushButton.clicked.connect(self.select_directory)
 
         self.horizontalLayout.addWidget(self.pushButton)
 
@@ -136,68 +97,53 @@ class MainWindow(QtWidgets.QDialog):
         self.horizontalLayout_2.setSpacing(10)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
 
-
-
-
-
-
-        self.browse_button = QtWidgets.QPushButton(self.widget_3)
-        self.browse_button.setText("Browse")
-        self.browse_button.setObjectName("browse_button")
-        self.horizontal_layout_1.addWidget(self.browse_button)
-
-        self.browse_button.clicked.connect(self.select_directory)
-
-        self.status_label = QtWidgets.QLabel(self.top_widget)
-        self.status_label.setGeometry(50, 75, 200, 16)
-        self.status_label.setText('')
-
-        self.file_browse_layout.addWidget(self.label)
-        self.file_browse_layout.addWidget(self.status_label)
-
-        # Scan and Select Widget (bottom widget)
-        # right side widget
-        self.widget_2 = QtWidgets.QWidget(self.central_widget)
-        self.widget_2.setGeometry(10, 150, 481, 251)
-        self.widget_2.setObjectName("widget_2")
-        # left side widget
-        self.widget_4 = QtWidgets.QWidget(self.widget_2)
-        self.widget_4.setGeometry(10, 30, 461, 211)
-        self.widget_4.setObjectName("widget_4")
-        # layout
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.widget_4)
-        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_2.setSpacing(10)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        # label
-        self.label_2 = QtWidgets.QLabel(self.widget_2)
-        self.label_2.setText("Select desired file types to sort")
-        self.label_2.move(20, 0)
-        self.label_2.setObjectName("label_2")
-        # scanned file tree (empty)
         self.file_tree = QtWidgets.QTreeWidget(self.widget_4)
+        self.file_tree.setObjectName("file_tree")
+
         self.horizontalLayout_2.addWidget(self.file_tree)
-        self.file_tree.setColumnCount(1)
-        self.file_tree.setHeaderLabel("Scanned Files")
 
-        # Sort Widget
-        self.widget_5 = QtWidgets.QWidget(self.central_widget)
+        self.verticalLayout.addWidget(self.widget_4)
 
-        self.widget_5 = QtWidgets.QWidget(self.central_widget)
-        self.widget_5.setGeometry(10, 420, 481, 41)
+        self.verticalLayout_2.addWidget(self.widget_2)
+
+        self.widget_5 = QtWidgets.QWidget(self.widget_6)
         self.widget_5.setObjectName("widget_5")
 
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout(self.widget_5)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+
         self.sort_button = QtWidgets.QPushButton(self.widget_5)
+        self.sort_button.setObjectName("sort_button")
         self.sort_button.setText('Sort')
-        self.sort_button.move(10, 10)
-        self.sort_button.setObjectName("scan_button")
         self.sort_button.setEnabled(False)
         self.sort_button.clicked.connect(self.sort_files)
 
+        self.horizontalLayout_4.addWidget(self.sort_button)
+
         self.sort_progress = QtWidgets.QProgressBar(self.widget_5)
-        self.sort_progress.setGeometry(100, 14, 125, 20)
-        self.sort_progress.setVisible(False)
+        self.sort_progress.setObjectName("progressBar")
+        # self.sort_progress.setVisible(False)
         self.sort_progress.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.size_policy = QtWidgets.QSizePolicy()
+        self.size_policy.setRetainSizeWhenHidden(True)
+
+        self.sort_progress.setSizePolicy(self.size_policy)
+
+        self.horizontalLayout_4.addWidget(self.sort_progress)
+
+        self.verticalLayout_2.addWidget(self.widget_5)
+
+        self.horizontalLayout_6.addWidget(self.widget_6)
+
+        MainWindow.setCentralWidget(self.centralwidget)
+
+        self.statusbar = QtWidgets.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        MainWindow.setStatusBar(self.statusbar)
+        MainWindow.setCentralWidget(self.centralwidget)
+        self.retranslateUi(MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     # Functions
     def show_popup(self):
@@ -326,34 +272,51 @@ class MainWindow(QtWidgets.QDialog):
         self.generate_file_tree(files)
         self.show_popup()
 
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.label.setText(_translate("MainWindow", "File Directory"))
+        self.status_label.setText(_translate("MainWindow", ""))
+        self.pushButton.setText(_translate("MainWindow", "Browse"))
+        self.label_2.setText(_translate("MainWindow", "Select File Types To Sort"))
+        self.file_tree.headerItem().setText(0, _translate("MainWindow", "Scanned Files"))
+        __sortingEnabled = self.file_tree.isSortingEnabled()
+        self.file_tree.setSortingEnabled(False)
+        self.file_tree.setSortingEnabled(__sortingEnabled)
+        self.sort_button.setText(_translate("MainWindow", "Sort"))
 
-app = QtWidgets.QApplication(sys.argv)
-app.setStyleSheet("""
-    QLineEdit {
-        background: #b5b5b5;
-        border-width: 10px;
-        padding-left: 10px;
-        padding-right: 10px;
-        border-radius: 5px;
-    }
-    QLabel {
-        background: none;
-    }
-    QListWidget {
-        background: #adadad;
-        border-radius: 5px;
-    }
-    QProgressBar {
-        border: solid grey;
-        border-radius: 5px;
-        color: black;
-    }
-    QProgressBar::chunk {
-        background-color: #6bffa4;
-        border-radius :5px;
-    }
-""")
+def iter_tree_widget(tree):
+    iterator = QtWidgets.QTreeWidgetItemIterator(tree)
+    while True:
+        item = iterator.value()
+        if item is not None:
+            yield item
+            iterator += 1
+        else:
+            break
 
-Organizer = MainWindow()
-Organizer.show()
-sys.exit(app.exec_())
+
+def tree_item_count(tree):
+    count = 0
+    iterator = QtWidgets.QTreeWidgetItemIterator(tree)  # pass your treewidget as arg
+    while iterator.value():
+        item = iterator.value()
+
+        if item.parent():
+            if item.parent().isExpanded():
+                count += 1
+        else:
+            # root item
+            count += 1
+        iterator += 1
+    return count
+
+
+if __name__ == "__main__":
+    import sys
+    app = QtWidgets.QApplication(sys.argv)
+    MainWindow = QtWidgets.QMainWindow()
+    ui = Ui_MainWindow()
+    ui.setupUi(MainWindow)
+    MainWindow.show()
+    sys.exit(app.exec_())
