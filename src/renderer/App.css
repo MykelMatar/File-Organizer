@@ -3,22 +3,11 @@
 @tailwind utilities;
 
 @layer components {
-    .sidebar-icon {
-        @apply relative flex items-center justify-center
-        h-12 w-12 mt-2 mb-2 mx-auto shadow-lg
-        bg-gray-800 text-green-500
-        hover:bg-green-600 hover:text-white
-        rounded-3xl hover:rounded-xl
-        transition-all duration-300 ease-linear
-        cursor-pointer;
-    }
-
     .button {
-        @apply relative flex items-center justify-center text-sm
-        h-11 w-24 shadow-lg font-bold
-        bg-blue-200 text-gray-600
-        hover:bg-green-600 hover:text-white
-        rounded-xl
+        @apply relative flex mx-auto items-center justify-center text-sm
+        h-11 w-24 shadow-lg font-bold object-contain
+        bg-blue-600 text-white
+        hover:bg-blue-800 rounded-xl
     }
 
     .sidebar-tooltip {

@@ -4,7 +4,7 @@ import FileBrowser from "./FileBrowser";
 
 const Hello = () => {
     return (
-        <div className="flex">
+        <div className="flex w-screen h-screen bg-white dark:bg-primary">
             <FileBrowser/>
         </div>
     );
