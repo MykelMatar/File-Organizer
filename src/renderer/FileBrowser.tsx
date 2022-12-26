@@ -1,6 +1,7 @@
 ﻿import {BsFillLightningFill, BsPlus} from 'react-icons/bs';
 import {FaFire, FaPoo} from 'react-icons/fa';
 import {AiFillFolderOpen} from "react-icons/ai";
+import {ipcRenderer, dialog, ipcMain, BrowserWindow} from "electron";
 
 const FileBrowser = () => {
     return (
@@ -20,8 +21,7 @@ const FileBrowser = () => {
                            className="bg-gray-50 shadow-lg border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                            placeholder="File Directory" required/>
                 </div>
-
-                <BrowseButton icon="" text="Browse"/>
+                <BrowseButton text="Browse"/>
             </form>
         </div>
     )
@@ -34,5 +34,9 @@ const BrowseButton = ({text, icon}: any) => (
         <span className="px-1">{text}</span>
     </button>
 )
+
+const BrowseDirectory = () => {
+
+}
 
 export default FileBrowser;

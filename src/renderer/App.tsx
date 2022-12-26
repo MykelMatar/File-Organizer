@@ -1,11 +1,13 @@
 import {MemoryRouter as Router, Route, Routes} from 'react-router-dom';
 import './App.css';
 import FileBrowser from "./FileBrowser";
+import FileTree from "./FileTree";
 
 const Hello = () => {
     return (
         <div className="flex w-screen h-screen bg-white dark:bg-primary">
             <FileBrowser/>
+            <FileTree/>
         </div>
     );
 };
