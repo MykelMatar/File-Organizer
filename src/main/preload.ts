@@ -21,4 +21,6 @@ contextBridge.exposeInMainWorld('electron', {
         },
     },
     getDir: () => ipcRenderer.invoke('dialog:getDir'),
+    isPath: (string: string) => ipcRenderer.invoke('dialog:isPath', string),
+    scanDirectory: (directoryPath: string) => ipcRenderer.invoke('dialog:scanDirectory', directoryPath)
 });

@@ -2,6 +2,9 @@ module.exports = {
     // mode: "jit",
     content: ["./src/**/*.{tsx,ts,js,jsx}"],
     theme: {
+        fontFamily: {
+            'sans': ['"DM Sans"'],
+        },
         extend: {
             colors: {
                 primary: '#202225',

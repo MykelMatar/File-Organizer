@@ -7,7 +7,6 @@ const Hello = () => {
     return (
         <div className="flex w-screen h-screen bg-white dark:bg-primary">
             <FileBrowser/>
-            <FileTree/>
         </div>
     );
 };

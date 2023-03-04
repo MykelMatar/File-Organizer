@@ -11,7 +11,9 @@ declare global {
                 ): (() => void) | undefined;
                 once(channel: Channels, func: (...args: unknown[]) => void): void;
             };
-            getDir(): undefined | string;
+            getDir(): undefined | string,
+            isPath(string: string): boolean,
+            scanDirectory(directoryPath: string): string[],
         };
     }
 }

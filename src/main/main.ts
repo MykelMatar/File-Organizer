@@ -14,6 +14,7 @@ import {autoUpdater} from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import {resolveHtmlPath} from './util';
+import {getFiles} from "../helpers/getFiles";
 
 class AppUpdater {
     constructor() {
@@ -140,6 +141,12 @@ app.whenReady()
                 return filePaths[0]
             }
         });
+        ipcMain.handle('dialog:isPath', async (event, directoryPath: string) => {
+            return path.isAbsolute(directoryPath);
+        })
+        ipcMain.handle('dialog:scanDirectory', async (event, directoryPath) => {
+            return getFiles(directoryPath)
+        })
         createWindow();
         app.on('activate', () => {
             // On macOS it's common to re-create a window in the app when the

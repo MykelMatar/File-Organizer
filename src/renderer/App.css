@@ -5,7 +5,7 @@
 @layer components {
     .button {
         @apply relative flex mx-auto items-center justify-center text-sm
-        h-11 w-24 shadow-lg font-bold object-contain
+        h-10 w-24 shadow-lg font-medium object-contain
         bg-blue-600 text-white
         hover:bg-blue-800 rounded-lg focus:scale-95
         transition-all ease-in duration-75
